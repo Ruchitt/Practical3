@@ -1,10 +1,12 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace Practical3.Models
 {
     public class Category
     {
         [Key]
+        [JsonIgnore]
         public int CategoryId { get; set; }
         [Required]
         public string Name { get; set; }

@@ -47,22 +47,22 @@ namespace Practical3.DataAccess.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "7ecd1f89-2f6a-417e-b6d4-6132fe61ea04",
-                            ConcurrencyStamp = "367e45f5-247a-4d45-b9af-ac91e0c68364",
+                            Id = "7db9e75b-4b9b-4fbd-ab30-96f9661666a3",
+                            ConcurrencyStamp = "0870292e-85c6-4986-a4db-6b7fce0de9b5",
                             Name = "Admin",
                             NormalizedName = "Admin"
                         },
                         new
                         {
-                            Id = "5fdee873-227c-4ded-accc-5f9783a8a29f",
-                            ConcurrencyStamp = "965fe15d-820c-4f4e-9f00-18968e33dfdd",
+                            Id = "90aa3fdd-4859-4b09-9557-565361f52fa0",
+                            ConcurrencyStamp = "8042c915-164f-4607-b034-da62ef1ef105",
                             Name = "User",
                             NormalizedName = "User"
                         },
                         new
                         {
-                            Id = "6868958f-52cc-40b5-885c-652d3f4969d1",
-                            ConcurrencyStamp = "f097f9ed-ac21-4cd7-93c8-d868ca5a03e3",
+                            Id = "9fd18576-eada-401f-8751-d1d2aef569b9",
+                            ConcurrencyStamp = "34058724-3b1d-4547-828b-35f8f5ebccd5",
                             Name = "HR",
                             NormalizedName = "HR"
                         });
@@ -283,7 +283,7 @@ namespace Practical3.DataAccess.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
-                    b.Property<double>("DisountAmount")
+                    b.Property<double>("DiscountAmount")
                         .HasColumnType("double");
 
                     b.Property<bool>("IsActive")
@@ -298,6 +298,9 @@ namespace Practical3.DataAccess.Migrations
 
                     b.Property<DateTime>("OrderDate")
                         .HasColumnType("datetime(6)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
 
                     b.Property<double>("TotalAmount")
                         .HasColumnType("double");
@@ -319,8 +322,8 @@ namespace Practical3.DataAccess.Migrations
                     b.Property<int>("OrderId")
                         .HasColumnType("int");
 
-                    b.Property<int>("Price")
-                        .HasColumnType("int");
+                    b.Property<double>("Price")
+                        .HasColumnType("double");
 
                     b.Property<int>("ProductId")
                         .HasColumnType("int");
@@ -329,10 +332,6 @@ namespace Practical3.DataAccess.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("OrderItemId");
-
-                    b.HasIndex("OrderId");
-
-                    b.HasIndex("ProductId");
 
                     b.ToTable("orderItems");
                 });
@@ -429,25 +428,6 @@ namespace Practical3.DataAccess.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("Practical3.Models.OrderItems", b =>
-                {
-                    b.HasOne("Practical3.Models.Order", "Order")
-                        .WithMany()
-                        .HasForeignKey("OrderId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Practical3.Models.Product", "Product")
-                        .WithMany()
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Order");
-
-                    b.Navigation("Product");
                 });
 
             modelBuilder.Entity("Practical3.Models.Product", b =>

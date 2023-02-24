@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Practical3.DataAccess.Migrations
 {
-    public partial class initial : Migration
+    public partial class Initial : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -88,6 +88,24 @@ namespace Practical3.DataAccess.Migrations
                 .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
+                name: "orderItems",
+                columns: table => new
+                {
+                    OrderItemId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    OrderId = table.Column<int>(type: "int", nullable: false),
+                    ProductId = table.Column<int>(type: "int", nullable: false),
+                    Quantity = table.Column<int>(type: "int", nullable: false),
+                    Price = table.Column<double>(type: "double", nullable: false),
+                    IsActive = table.Column<bool>(type: "tinyint(1)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_orderItems", x => x.OrderItemId);
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder.CreateTable(
                 name: "orders",
                 columns: table => new
                 {
@@ -96,7 +114,8 @@ namespace Practical3.DataAccess.Migrations
                     OrderDate = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     Note = table.Column<string>(type: "longtext", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    DisountAmount = table.Column<double>(type: "double", nullable: false),
+                    DiscountAmount = table.Column<double>(type: "double", nullable: false),
+                    Status = table.Column<int>(type: "int", nullable: false),
                     TotalAmount = table.Column<double>(type: "double", nullable: false),
                     CustomerName = table.Column<string>(type: "longtext", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
@@ -272,35 +291,20 @@ namespace Practical3.DataAccess.Migrations
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
-            migrationBuilder.CreateTable(
-                name: "orderItems",
-                columns: table => new
-                {
-                    OrderItemId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    Quantity = table.Column<int>(type: "int", nullable: false),
-                    Price = table.Column<int>(type: "int", nullable: false),
-                    IsActive = table.Column<bool>(type: "tinyint(1)", nullable: false),
-                    OrderId = table.Column<int>(type: "int", nullable: false),
-                    ProductId = table.Column<int>(type: "int", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_orderItems", x => x.OrderItemId);
-                    table.ForeignKey(
-                        name: "FK_orderItems_orders_OrderId",
-                        column: x => x.OrderId,
-                        principalTable: "orders",
-                        principalColumn: "OrderId",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_orderItems_products_ProductId",
-                        column: x => x.ProductId,
-                        principalTable: "products",
-                        principalColumn: "ProductId",
-                        onDelete: ReferentialAction.Cascade);
-                })
-                .Annotation("MySql:CharSet", "utf8mb4");
+            migrationBuilder.InsertData(
+                table: "AspNetRoles",
+                columns: new[] { "Id", "ConcurrencyStamp", "Name", "NormalizedName" },
+                values: new object[] { "7db9e75b-4b9b-4fbd-ab30-96f9661666a3", "0870292e-85c6-4986-a4db-6b7fce0de9b5", "Admin", "Admin" });
+
+            migrationBuilder.InsertData(
+                table: "AspNetRoles",
+                columns: new[] { "Id", "ConcurrencyStamp", "Name", "NormalizedName" },
+                values: new object[] { "90aa3fdd-4859-4b09-9557-565361f52fa0", "8042c915-164f-4607-b034-da62ef1ef105", "User", "User" });
+
+            migrationBuilder.InsertData(
+                table: "AspNetRoles",
+                columns: new[] { "Id", "ConcurrencyStamp", "Name", "NormalizedName" },
+                values: new object[] { "9fd18576-eada-401f-8751-d1d2aef569b9", "34058724-3b1d-4547-828b-35f8f5ebccd5", "HR", "HR" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
@@ -340,16 +344,6 @@ namespace Practical3.DataAccess.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_orderItems_OrderId",
-                table: "orderItems",
-                column: "OrderId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_orderItems_ProductId",
-                table: "orderItems",
-                column: "ProductId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_products_CategoryId",
                 table: "products",
                 column: "CategoryId");
@@ -376,16 +370,16 @@ namespace Practical3.DataAccess.Migrations
                 name: "orderItems");
 
             migrationBuilder.DropTable(
-                name: "AspNetRoles");
-
-            migrationBuilder.DropTable(
-                name: "AspNetUsers");
-
-            migrationBuilder.DropTable(
                 name: "orders");
 
             migrationBuilder.DropTable(
                 name: "products");
+
+            migrationBuilder.DropTable(
+                name: "AspNetRoles");
+
+            migrationBuilder.DropTable(
+                name: "AspNetUsers");
 
             migrationBuilder.DropTable(
                 name: "categories");

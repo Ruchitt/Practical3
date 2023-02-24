@@ -5,34 +5,26 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace Practical3.Models
 {
     public class OrderItems
     {
-        [Required]
         [Key]
+        [JsonIgnore]
         public int OrderItemId { get; set; }
-        [Required]
-        public int Quantity { get; set; }
-        [Required]
-        public int Price { get; set; }
-        [Required]
-        public bool IsActive { get; set; }
-
-        //Foreign Key
-        [Required]
+        [JsonIgnore]
         public int OrderId { get; set; }
-        [ForeignKey("OrderId")]
-        [ValidateNever]
-        public Order Order { get; set; }
-
-
-        [Required]
+        [JsonIgnore]
         public int ProductId { get; set; }
-        [ForeignKey("ProductId")]
-        [ValidateNever]
-        public Product Product { get; set; }
+        [JsonIgnore]
+        public int Quantity { get; set; }
+        [JsonIgnore]
+        public double Price { get; set; }
+        public bool IsActive { get; set; }
+        
+      
     }
 }

@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Numerics;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace Practical3.Models
@@ -11,17 +12,19 @@ namespace Practical3.Models
     public class Order
     {
 		[Key]
+        [JsonIgnore]
         public int OrderId { get; set; }
         public DateTime OrderDate { get; set; } = DateTime.Now.Date;
 		public string Note { get; set; }
-		public double DisountAmount { get; set; }
+		public double DiscountAmount { get; set; }
         public enum StatusType
-        { 
+        {
             Open,
-	        Draft,
+            Draft,
             Shipped,
             Paid
         }
+        public StatusType Status { get; set; }
         [Required]
         public double TotalAmount { get; set; }
         [Required]

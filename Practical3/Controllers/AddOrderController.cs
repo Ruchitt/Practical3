@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Configuration;
+using Practical3.DataAccess.Repository;
 using Practical3.DataAccess.Repository.IRepository;
 using Practical3.Models;
 using Practical3.Models.ViewModels;
@@ -30,84 +31,108 @@ namespace Practical3.Controllers
         }
         [HttpPost]
         [Route("Add OrderItem")]
-        public async Task<ActionResult> Post(OrderItemVM model)
+        public async Task<ActionResult> Post(OrderVM model)
         {
-            int a1 = 0;
-            if (User.Identity.IsAuthenticated)
+            // Check if user exists
+            var user = await _userManager.GetUserAsync(User);
+            //if (user == null)
+            //{
+            //    return Unauthorized();
+            //}
+
+            // Add order to the repository
+            var order = new Order
             {
-                var userdata = await _userManager.FindByNameAsync(User.Identity.Name);
-
-                if (userdata == null)
-                {
-                    return BadRequest("No User Found");
-                }
-
-                var check = _unitOfWork.Order.GetFirstOrDefault(x => x.CustomerName == userdata.UserName);
-                var order = new Order();
-                if (check == null)
-                {
-                    order.CustomerName = userdata.UserName;
-                    if (model.Name != null)
-                    {
-                        order.CustomerName = model.Name;
-                    }
-                    order.CustomerEmail = userdata.Email;
-                    if (model.Email != null)
-                    {
-                        order.CustomerEmail = model.Email;
-                    }
-                    order.CustomerContactNo = userdata.PhoneNumber;
-                    order.Note = model.ProductId.ToString();
-                    order.IsActive = true;
-                    order.DisountAmount = 0;
-
-
-                    _unitOfWork.Order.Add(order);
-                    a1 = order.OrderId;
-                    _unitOfWork.Save();
-                    return StatusCode(StatusCodes.Status200OK, new Response { Status = "Success", Meessage = "Order added Succesfully" });
-                }
-
-                var orderitemdata = new OrderItems()
-                {
-                    Quantity = model.Quantity,
-                    OrderId = a1,
-                    ProductId = model.ProductId,
-                    
-                };
-
-                _unitOfWork.OrderItems.Add(orderitemdata);
-                _unitOfWork.Save();
-            }
-            else
+                OrderDate = DateTime.Now,
+                Note = model.Note,
+                DiscountAmount = model.DiscountAmount,
+                Status = StatusType.Open,
+                TotalAmount = model.TotalAmount,
+                CustomerName = model.CustomerName,
+                CustomerEmail = string.IsNullOrEmpty(model.CustomerEmail) ? user.Email : model.CustomerEmail,
+                CustomerContactNo = model.CustomerContactNo,
+                IsActive = true,
+                CreatedOn = DateTime.Now,
+                ModifiedOn = DateTime.Now
+            };
+            _unitOfWork.Order.Add(order);
+            _unitOfWork.Save();
+            // Add order items to the repository
+            var orderItems = new List<OrderItems>();
+            foreach (var item in model.OrderItems)
             {
-                var order = new Order();
-                order.CustomerName = model.Name;
-                order.CustomerEmail = model.Email;
-                order.CustomerContactNo = model.PhoneNumber;
-                order.Note = model.ProductId.ToString();
-                order.IsActive = true;
-                order.DisountAmount = 0;
-
-                _unitOfWork.Order.Add(order);
-                _unitOfWork.Save();
-
-                var orderitemdata = new OrderItems()
+                
+                var product = _unitOfWork.Product.GetFirstOrDefault(x => x.ProductId == model.ProductId);
+                if (product == null)
                 {
-                    Quantity = model.Quantity,
-                    OrderId = a1,
+                    return BadRequest($"Product with id {model.ProductId} not found");
+                }
+                if (product.Quantity < item.Quantity)
+                {
+                    return BadRequest($"Product with id {item.ProductId} does not have enough quantity");
+                }
+                var orderItem = new OrderItems
+                {
+                    OrderId = order.OrderId,
                     ProductId = model.ProductId,
-                    Price=123
+                    Quantity = model.Quantity,
+                    Price = product.Price,
+                    IsActive = true
                 };
-
-                _unitOfWork.OrderItems.Add(orderitemdata);
-                _unitOfWork.Save();
-                return StatusCode(StatusCodes.Status200OK, new Response { Status = "Success", Meessage = "Order added Succesfully" });
+                orderItems.Add(orderItem);
             }
-            return Ok(new Response { Status = "Error", Meessage = "Please Try Again " });
+            foreach (var item in orderItems)
+            {
+                _unitOfWork.OrderItems.Add(item);
+            }
+            _unitOfWork.Save();
+            return Ok($"Order with id {order.OrderId} added successfully");
         }
 
-            
+        [HttpPost]
+        [Route("Filters")]
+        public IActionResult GetAllOrders(DateTime? fromDate, DateTime? toDate, StatusType? statusType, string? customerSearch)
+        {
+
+            // Get orders from the repository
+            var orders = _unitOfWork.Order.GetAll();
+
+                // Apply filters if provided
+                if (fromDate != null)
+                {
+                    orders = orders.Where(o => o.CreatedOn >= fromDate.Value);
+                }
+                if (toDate != null)
+                {
+                    orders = orders.Where(o => o.CreatedOn <= toDate.Value);
+                }
+                if (statusType != null)
+                {
+                    orders = orders.Where(o => o.Status == statusType.Value);
+                }
+                if (!string.IsNullOrEmpty(customerSearch))
+                {
+                    orders = orders.Where(o => o.CustomerName.ToLower().Contains(customerSearch.ToLower())
+                                         || o.CustomerEmail.ToLower().Contains(customerSearch.ToLower())
+                                         || o.CustomerContactNo.ToLower().Contains(customerSearch.ToLower()));
+                }
+
+                // Project orders into OrderViewModels
+                var orderViewModels = orders.Select(o => new Order
+                {
+                    OrderId = o.OrderId,
+                    CreatedOn = o.CreatedOn,
+                    CustomerName = o.CustomerName,
+                    CustomerEmail = o.CustomerEmail,
+                    CustomerContactNo = o.CustomerContactNo,
+                    Status = o.Status,
+                    TotalAmount = o.TotalAmount,
+                    DiscountAmount = o.DiscountAmount,
+                    Note = o.Note
+                }).ToList();
+
+                return Ok(orderViewModels);
+        }
 
     }
 }

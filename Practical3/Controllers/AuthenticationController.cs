@@ -28,7 +28,7 @@ namespace Practical3.Controllers
             _configuration = configuration;
         }
         [HttpPost]
-        [Authorize(Roles ="Admin")]
+        [Authorize(Roles = "Admin")]
         [Route("Register-Admin")]
         public async Task<IActionResult> Register_Admin([FromBody] Register model, string role)
         {
